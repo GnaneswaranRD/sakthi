@@ -55,50 +55,54 @@
 </section>
 
 <!-- SECTION 1: Recently Added Products -->
-<div class="row">
-  {% for p in recently_added %}
-  <div class="col-6 col-md-3 mb-4">
-    <div class="card product-card h-100 d-flex flex-column">
-      {% if p.image %}
+<div class="container py-5 scroll-animate scroll-right">
+  <h2 class="mb-4 text-center">Recently Added</h2>
+  <div class="row">
+    {% for p in recently_added %}
+    <div class="col-6 col-md-3 mb-4">
+      <div class="card product-card h-100">
+        {% if p.image %}
         <img src="{{ p.image.url }}" class="card-img-top" alt="{{ p.name }}">
-      {% else %}
+        {% else %}
         <img src="{% static 'noimage.png' %}" class="card-img-top" alt="{{ p.name }}">
-      {% endif %}
+        {% endif %}
+        <div class="card-body d-flex flex-column">
+          <h5 class="card-title">{{ p.name }}</h5>
+          <p class="card-text">₹{{ p.price }}</p>
 
-      <div class="card-body d-flex flex-column">
-        <h5 class="card-title">{{ p.name }}</h5>
-        <p class="card-text fw-bold text-success">₹{{ p.price }}</p>
+          <div class="mb-2">
+            {% for i in "12345" %}
+              {% if forloop.counter <= p.avg_rating|default:0 %}
+                <i class="bi bi-star-fill text-warning"></i>
+              {% else %}
+                <i class="bi bi-star text-warning"></i>
+              {% endif %}
+            {% endfor %}
+            <small>{{ p.avg_rating|default:0|floatformat:1 }}/5.0</small>
+          </div>
 
-        <!-- Rating Stars -->
-        <div class="mb-2">
-          {% for i in "12345" %}
-            {% if forloop.counter <= p.avg_rating|default:0 %}
-              <i class="bi bi-star-fill text-warning"></i>
-            {% else %}
-              <i class="bi bi-star text-warning"></i>
-            {% endif %}
-          {% endfor %}
-          <small>{{ p.avg_rating|default:0|floatformat:1 }}/5.0</small>
-        </div>
+          <!-- Action Buttons -->
+            <div class="d-grid gap-2 mt-auto">
+              <!-- View Button -->
+              <a href="{% url 'product_detail' p.id %}" class="btn btn-sm btn-outline-dark w-100">
+                <i class="bi bi-eye"></i> View
+              </a>
+              <!-- Add to Cart -->
+              <a href="{% url 'add_to_cart' p.id %}" class="btn btn-sm btn-primary w-100">
+                <i class="bi bi-cart-plus"></i> Add to Cart
+              </a>
 
-        <!-- Action Buttons -->
-        <div class="d-grid gap-2 mt-auto">
-          <a href="{% url 'product_detail' p.id %}" class="btn btn-sm btn-outline-dark w-100">
-            <i class="bi bi-eye"></i> View
-          </a>
-          <a href="{% url 'add_to_cart' p.id %}" class="btn btn-sm btn-primary w-100">
-            <i class="bi bi-cart-plus"></i> Add to Cart
-          </a>
-          <a href="{% url 'add_to_favourite' p.id %}" class="btn btn-sm btn-outline-danger w-100">
-            <i class="bi bi-heart"></i> Favourite
-          </a>
+              <!-- Add to Favourite -->
+              <a href="{% url 'add_to_favourite' p.id %}" class="btn btn-sm btn-outline-danger w-100">
+                <i class="bi bi-heart"></i> Favourite
+              </a>
+            </div>
         </div>
       </div>
     </div>
+    {% endfor %}
   </div>
-  {% endfor %}
 </div>
-
 
 <!-- HERO SECTION -->
 <div id="carouselHero" class="carousel slide scroll-animate scroll-left">
@@ -138,17 +142,16 @@
           <h6 class="card-title text-truncate">{{ p.name }}</h6>
           <p class="card-text fw-bold text-success mb-3">₹{{ p.price }}</p>
           
-          <!-- Rating Stars -->
-        <div class="mb-2">
-          {% for i in "12345" %}
-            {% if forloop.counter <= p.avg_rating|default:0 %}
-              <i class="bi bi-star-fill text-warning"></i>
-            {% else %}
-              <i class="bi bi-star text-warning"></i>
-            {% endif %}
-          {% endfor %}
-          <small>{{ p.avg_rating|default:0|floatformat:1 }}/5.0</small>
-        </div>
+          <div class="mb-2">
+            {% for i in "12345" %}
+              {% if forloop.counter <= p.avg_rating|default:0 %}
+                <i class="bi bi-star-fill text-warning"></i>
+              {% else %}
+                <i class="bi bi-star text-warning"></i>
+              {% endif %}
+            {% endfor %}
+            <small>{{ p.avg_rating|default:0|floatformat:1 }}/5.0</small>
+          </div>
 
           <!-- Action Buttons -->
           <div class="d-grid gap-2 mt-auto">
