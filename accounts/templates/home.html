@@ -91,6 +91,13 @@
       display: none; /* hidden by default */
     }
 
+    /* Show dropdown on hover */
+    .dropdown:hover .dropdown-menu {
+      display: block;
+      margin-top: 0; /* keeps it directly below the button */
+    }
+
+
   </style>
 
 {% block style %}{% endblock style %}
@@ -128,8 +135,17 @@
       </form>
 
       <!-- Right buttons -->
-      <div class="d-flex align-items-center flex-wrap gap-2 my-2 my-lg-0">
-        
+      <div class="dropdown">
+        <a class="btn btn-sm btn-yellow d-flex align-items-center dropdown-toggle"
+          href="#" id="productsMenu" role="button"
+          data-bs-toggle="dropdown" aria-expanded="false" title="Products">
+          <i class="bi bi-grid"></i>
+        </a>
+        <ul class="dropdown-menu" id="productsDropdown" aria-labelledby="productsMenu">
+          <li><span class="dropdown-item text-muted">Loading...</span></li>
+        </ul>
+      </div>
+
         <a class="btn btn-sm btn-yellow loading-btn" href="{% url 'profile' %}" title="Account">
           <i class="bi bi-person-circle"></i>
         </a>
@@ -140,7 +156,7 @@
           <i class="bi bi-heart"></i>
         </a>
         {% if user.is_authenticated %}
-          <a href="{% url 'logout' %}" class="btn btn-sm btn-yellow d-flex align-items-center loading-btn" title="Logout">
+          <a href="{% url 'logout' %}" class="btn btn-sm btn-yellow loading-btn" title="Logout">
             <i class="bi bi-box-arrow-right"></i> <!-- logout icon -->
           </a>
         {% else %}
@@ -152,6 +168,23 @@
   </div>
 </nav>
 
+<!-- Toast Container -->
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
+  {% if messages %}
+    {% for message in messages %}
+      <div class="toast align-items-center text-bg-success border-0 show" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="2000">
+        <div class="d-flex">
+          <div class="toast-body">
+            {{ message }}
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      </div>
+    {% endfor %}
+  {% endif %}
+</div>
+
+
 {% block content %}{% endblock %}
 
 
@@ -162,7 +195,11 @@
     <div class="row">
       <div class="col-md-3">
         <h5>About Us</h5>
-        <p>We provide the best cycles and accessories online.</p>
+        <p>Sri Sakthi Aromatic</p>
+        <p style="font-size:11px;">
+We are manufacturers of Cup sambrani, Sambrani Powder, TT Katti Sambrani, Incense cones, Agarbatties and other Pooja products.
+
+We have been in the industry for the past 30+ years and counting. Our registered brands Sevalkodi, Ecstasy, Sai Shree and other brands like Sai Rudhra, Marugan, Chennai TT, Thennai TT, Sai Globe define our legacy selling through offline and online through various platforms.</p>
       </div>
       <div class="col-md-3">
         <h5>Policies</h5>
@@ -239,6 +276,54 @@
       });
     });
   });
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const toastElList = [].slice.call(document.querySelectorAll('.toast'));
+  toastElList.forEach(function (toastEl) {
+    new bootstrap.Toast(toastEl).show();
+  });
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    fetch("{% url 'menu_list_json' %}")
+        .then(response => response.json())
+        .then(data => {
+            const dropdown = document.getElementById('productsDropdown');
+            dropdown.innerHTML = '';
+
+            if (data.menus.length === 0) {
+                dropdown.innerHTML = '<li><span class="dropdown-item text-muted">No categories</span></li>';
+                return;
+            }
+
+            data.menus.forEach(menu => {
+                const li = document.createElement('li');
+                if (menu.children.length > 0) {
+                    li.classList.add('dropend'); // Bootstrap submenu to the right
+                    li.innerHTML = `
+                        <a class="dropdown-item dropdown-toggle" href="{% url 'products' %}?category=${menu.id}" data-bs-toggle="dropdown">
+                            ${menu.name}
+                        </a>
+                        <ul class="dropdown-menu">
+                            ${menu.children.map(child => `<li><a class="dropdown-item" href="{% url 'products' %}?category=${child.id}">${child.name}</a></li>`).join('')}
+                        </ul>
+                    `;
+                } else {
+                    li.innerHTML = `<a class="dropdown-item" href="{% url 'products' %}?category=${menu.id}">${menu.name}</a>`;
+                }
+                dropdown.appendChild(li);
+            });
+        })
+        .catch(err => {
+            console.error(err);
+            const dropdown = document.getElementById('productsDropdown');
+            dropdown.innerHTML = '<li><span class="dropdown-item text-danger">Failed to load menus</span></li>';
+        });
+});
 </script>
 
 

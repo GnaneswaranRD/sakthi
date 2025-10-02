@@ -6,6 +6,8 @@ from django.urls import reverse_lazy
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
 from products.models import Menu, Product, Review
+from django.http import JsonResponse
+from django.db.models import Avg
 
 
 # REGISTER VIEW
@@ -53,9 +55,23 @@ class DashboardView(View):
     login_url = reverse_lazy('login')
 
     def get(self, request):
+        # Menus
         menus = Menu.objects.filter(parent__isnull=True).prefetch_related('children')
-        recently_added = Product.objects.order_by('-id')[:8]  # last 8 products
-        best_sellers = Product.objects.order_by('-stock')[:8]  # placeholder: you can calculate based on sales
+
+        # Recently added products
+        recently_added = Product.objects.order_by('-id')[:8].annotate(avg_rating=Avg('reviews__rating'))
+
+        # for product in recently_added:
+        #     avg = product.reviews.aggregate(average=Avg('rating'))['average']
+        #     product.avg_rating = round(avg or 0, 1)
+
+        # Best sellers (placeholder: using stock as you had)
+        best_sellers = Product.objects.order_by('-stock')[:8].annotate(avg_rating=Avg('reviews__rating'))
+        # for product in best_sellers:
+        #     avg = product.reviews.aggregate(average=Avg('rating'))['average']
+        #     product.avg_rating = round(avg or 0, 1)
+
+        # Recent reviews
         reviews = Review.objects.select_related('user', 'product').order_by('-id')[:10]
 
         return render(request, self.template_name, {
@@ -105,3 +121,21 @@ class ProfileView(LoginRequiredMixin, View):
 
         messages.success(request, "Profile updated successfully")
         return redirect("profile")
+
+
+def menu_list_json(request):
+    """
+    Return a JSON response with all top-level menus and their children.
+    """
+    menus = Menu.objects.filter(parent__isnull=True).prefetch_related('children')
+    data = []
+
+    for menu in menus:
+        children = [{"id": child.id, "name": child.name} for child in menu.children.all()]
+        data.append({
+            "id": menu.id,
+            "name": menu.name,
+            "children": children
+        })
+
+    return JsonResponse({"menus": data})

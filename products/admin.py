@@ -14,7 +14,7 @@ class ProductAdmin(admin.ModelAdmin):
 
 @admin.register(Menu)
 class MenuAdmin(admin.ModelAdmin):
-    list_display = ('id','name','parent')
+    list_display = ('id','name','image','parent')
     list_filter = ('name',)
 
 # ---------- Cart ----------

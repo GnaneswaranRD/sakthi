@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import RegisterView, LoginView, DashboardView, LogoutView, ProfileView
+from .views import RegisterView, LoginView, DashboardView, LogoutView, ProfileView,menu_list_json
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
@@ -7,4 +7,5 @@ urlpatterns = [
     path('', DashboardView.as_view(), name='dashboard'),
     path('logout/', LogoutView.as_view(), name='logout'),
     path("profile/", ProfileView.as_view(), name="profile"),
+    path('api/menus/', menu_list_json, name='menu_list_json'),
 ]

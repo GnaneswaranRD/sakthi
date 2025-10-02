@@ -5,11 +5,15 @@ from django.utils import timezone
 # --- Product ---
 class Menu(models.Model):
     name = models.CharField(max_length=100)
+    image = models.ImageField(upload_to='menu/', blank=True, null=True)  # for hero/thumbnail
     parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='children')
     # parent=null means main menu; otherwise submenu
 
     def __str__(self):
         return self.name
+    
+class HerosectionImages(models.Model):
+    image = models.ImageField(upload_to='hero/', blank=True, null=True)
 
 
 class Product(models.Model):

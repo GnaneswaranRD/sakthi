@@ -1,0 +1,157 @@
+{% extends "home.html" %}
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <div class="row g-4">
+
+    <!-- Product Image -->
+    <div class="col-12 col-md-6">
+      <div class="card shadow-lg rounded-4 overflow-hidden">
+        {% if product.image %}
+          <img src="{{ product.image.url }}" class="img-fluid" alt="{{ product.name }}" style="width:100%; max-height:500px; object-fit:cover;">
+        {% else %}
+          <img src="https://via.placeholder.com/500x500.png?text=No+Image" class="img-fluid" alt="No image">
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Product Details -->
+    <div class="col-12 col-md-6 d-flex flex-column">
+      <p>{{product.menu.name}}</p>
+      <h1 class="fw-bold mb-3">{{ product.name }}</h1>
+
+      <!-- Price -->
+      <p class="h3 text-success mb-3">₹{{ product.price }}</p>
+
+      <!-- Quantity Selector -->
+    <div class="mb-1 d-flex align-items-center gap-3">
+    <label class="fw-semibold mb-0">Quantity:</label>
+    <div class="input-group" style="max-width:130px;">
+        <button class="btn btn-outline-secondary" type="button" id="decreaseQty">-</button>
+        <input id="quantityInput" type="text" class="form-control text-center" value="1" readonly>
+        <button class="btn btn-outline-secondary" type="button" id="increaseQty">+</button>
+    </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="d-flex flex-column flex-sm-row gap-2 mt-3 mb-3">
+    <a id="addToCartBtn" href="{% url 'add_to_cart' product.id %}" class="btn btn-primary btn-sm flex-grow-1 shadow-sm">
+        <i class="bi bi-cart-plus"></i> Add to Cart
+    </a>
+    <a href="#" class="btn btn-success btn-sm flex-grow-1 shadow-sm">
+        <i class="bi bi-bag-check"></i> Buy Now
+    </a>
+    <a href="{% url 'add_to_favourite' product.id %}" class="btn btn-outline-danger btn-sm flex-grow-1 shadow-sm">
+        <i class="bi bi-heart"></i> Favourite
+    </a>
+    </div>
+
+      <!-- Description -->
+      <div class="mb-4">
+        <h5 class="fw-semibold">Description</h5>
+        <p class="text-muted">{{ product.description|linebreaks }}</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Reviews Section -->
+  <div class="mt-5">
+    <h4 class="mb-4">Customer Reviews <span class="badge bg-secondary">{{ reviews.count }}</span></h4>
+    {% if reviews %}
+      <div class="row g-4">
+        {% for review in reviews %}
+          <div class="col-12 col-md-6">
+            <div class="card shadow-sm rounded-3 p-3 h-100">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <strong>{{ review.user.username }}</strong>
+                <div>
+                {% for i in "12345" %}
+                    {% if forloop.counter <= review.rating %}
+                    <i class="bi bi-star-fill text-warning"></i>
+                    {% else %}
+                    <i class="bi bi-star text-warning"></i>
+                    {% endif %}
+                {% endfor %}
+                </div>
+              </div>
+              <p class="text-muted">{{ review.comment|linebreaks }}</p>
+              <small class="text-muted">{{ review.created_at|date:"d M Y H:i" }}</small>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-muted">No reviews yet.</p>
+    {% endif %}
+  </div>
+
+  <!-- Related Products -->
+  {% if related_products %}
+    <div class="mt-5">
+      <h4 class="mb-3">Related Products</h4>
+      <div class="row g-3">
+        {% for p in related_products %}
+          <div class="col-6 col-md-3">
+            <div class="card h-100 shadow-sm rounded-4 overflow-hidden">
+              {% if p.image %}
+                <img src="{{ p.image.url }}" class="card-img-top" style="height:150px; object-fit:cover;" alt="{{ p.name }}">
+              {% endif %}
+              <div class="card-body d-flex flex-column">
+                <h6 class="card-title text-truncate">{{ p.name }}</h6>
+                <p class="card-text fw-bold text-success mb-2">₹{{ p.price }}</p>
+                <a href="{% url 'product_detail' p.id %}" class="btn btn-sm btn-yellow mt-auto w-100">View</a>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const quantityInput = document.getElementById('quantityInput');
+  const addToCartBtn = document.getElementById('addToCartBtn');
+
+  addToCartBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    const qty = quantityInput.value || 1;
+    const url = this.getAttribute('href') + '?quantity=' + qty;
+    window.location.href = url; 
+  });
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const quantityInput = document.getElementById('quantityInput');
+  const addToCartBtn = document.getElementById('addToCartBtn');
+  const increaseBtn = document.getElementById('increaseQty');
+  const decreaseBtn = document.getElementById('decreaseQty');
+
+  // Increase quantity
+  increaseBtn.addEventListener('click', function() {
+    let qty = parseInt(quantityInput.value);
+    quantityInput.value = qty + 1;
+  });
+
+  // Decrease quantity
+  decreaseBtn.addEventListener('click', function() {
+    let qty = parseInt(quantityInput.value);
+    if(qty > 1) quantityInput.value = qty - 1;
+  });
+
+  // Add to Cart with selected quantity
+  addToCartBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    const qty = quantityInput.value || 1;
+    const url = this.getAttribute('href') + '?quantity=' + qty;
+    window.location.href = url; 
+  });
+});
+</script>
+
+{% endblock %}

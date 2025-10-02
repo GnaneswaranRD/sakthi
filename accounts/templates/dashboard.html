@@ -11,26 +11,26 @@
     <div class="row">
       <div class="col-12 text-center mb-4">
         <h2 class="fw-bold">Our Products</h2>
-        <p class="text-muted">Explore our product categories below</p> <!-- optional subtitle -->
+        <p class="text-muted">Explore our product categories below</p>
       </div>
     </div>
 
     <!-- Category Grid -->
     <div class="row justify-content-center g-4">
-
       {% for menu in menus %}
       <div class="col-4 col-md-2 text-center">
-        <!-- Round image -->
-        {% if menu.image %}
-          <img src="{{ menu.image.url }}" alt="{{ menu.name }}" class="category-img mb-2">
-        {% else %}
-          <img src="{% static 'noimage.png' %}" alt="{{ menu.name }}" class="category-img mb-2">
-        {% endif %}
 
-        <!-- Title -->
-        <h6 class="fw-bold">{{ menu.name }}</h6>
+        <!-- Category Link -->
+        <a href="{% url 'products' %}?category={{ menu.id }}" class="d-block text-decoration-none">
+          {% if menu.image %}
+            <img src="{{ menu.image.url }}" alt="{{ menu.name }}" class="category-img mb-2">
+          {% else %}
+            <img src="{% static 'noimage.png' %}" alt="{{ menu.name }}" class="category-img mb-2">
+          {% endif %}
+          <h6 class="fw-bold text-dark">{{ menu.name }}</h6>
+        </a>
 
-        <!-- Dropdown if needed -->
+        <!-- Dropdown for children -->
         {% if menu.children.all %}
           <div class="dropdown mt-2">
             <button class="btn btn-outline-dark btn-sm dropdown-toggle" type="button" id="menu{{ menu.id }}" data-bs-toggle="dropdown" aria-expanded="false">
@@ -38,50 +38,65 @@
             </button>
             <ul class="dropdown-menu" aria-labelledby="menu{{ menu.id }}">
               {% for child in menu.children.all %}
-                <li><a class="dropdown-item" href="#">{{ child.name }}</a></li>
+                <li>
+                  <a class="dropdown-item" href="{% url 'products' %}?category={{ child.id }}">
+                    {{ child.name }}
+                  </a>
+                </li>
               {% endfor %}
             </ul>
           </div>
         {% endif %}
+
       </div>
       {% endfor %}
-
     </div>
   </div>
 </section>
 
-
-
 <!-- SECTION 1: Recently Added Products -->
-<div class="container py-5 scroll-animate scroll-right">
-  <h2 class="mb-4">Recently Added</h2>
-  <div class="row">
-    {% for p in recently_added %}
-    <div class="col-6 col-md-3 mb-4">
-      <div class="card product-card">
-        {% if p.image %}
+<div class="row">
+  {% for p in recently_added %}
+  <div class="col-6 col-md-3 mb-4">
+    <div class="card product-card h-100 d-flex flex-column">
+      {% if p.image %}
         <img src="{{ p.image.url }}" class="card-img-top" alt="{{ p.name }}">
-        {% else %}
+      {% else %}
         <img src="{% static 'noimage.png' %}" class="card-img-top" alt="{{ p.name }}">
-        {% endif %}
-        <div class="card-body">
-          <h5 class="card-title">{{ p.name }}</h5>
-          <p class="card-text">₹{{ p.price }}</p>
-          <form method="post" action="{% url 'cart' %}">
-            {% csrf_token %}
-            <input type="hidden" name="product_id" value="{{ p.id }}">
-            <button type="submit" class="btn btn-yellow btn-sm">Add to Cart</button>
-          </form>
-          <form method="post" action="{% url 'favourites' %}" class="mt-1">
-            {% csrf_token %}
-            <input type="hidden" name="product_id" value="{{ p.id }}">
-            <button type="submit" class="btn btn-outline-dark btn-sm">♥ Add</button>
-          </form>
+      {% endif %}
+
+      <div class="card-body d-flex flex-column">
+        <h5 class="card-title">{{ p.name }}</h5>
+        <p class="card-text fw-bold text-success">₹{{ p.price }}</p>
+
+        <!-- Rating Stars -->
+        <div class="mb-2">
+          {% for i in "12345" %}
+            {% if forloop.counter <= p.avg_rating|default:0 %}
+              <i class="bi bi-star-fill text-warning"></i>
+            {% else %}
+              <i class="bi bi-star text-warning"></i>
+            {% endif %}
+          {% endfor %}
+          <small>{{ p.avg_rating|default:0|floatformat:1 }}/5.0</small>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="d-grid gap-2 mt-auto">
+          <a href="{% url 'product_detail' p.id %}" class="btn btn-sm btn-outline-dark w-100">
+            <i class="bi bi-eye"></i> View
+          </a>
+          <a href="{% url 'add_to_cart' p.id %}" class="btn btn-sm btn-primary w-100">
+            <i class="bi bi-cart-plus"></i> Add to Cart
+          </a>
+          <a href="{% url 'add_to_favourite' p.id %}" class="btn btn-sm btn-outline-danger w-100">
+            <i class="bi bi-heart"></i> Favourite
+          </a>
         </div>
       </div>
     </div>
-    {% endfor %}
   </div>
+  {% endfor %}
 </div>
 
 
@@ -103,23 +118,50 @@
   </button>
 </div>
 
-
 <!-- SECTION 3: Best Sellers -->
 <div class="container py-5 scroll-animate scroll-right">
-  <h2 class="mb-4">Best Sellers</h2>
-  <div class="row">
+  <h2 class="mb-4 text-center">Best Selling Products</h2>
+  <div class="row g-4">
     {% for p in best_sellers %}
-    <div class="col-6 col-md-3 mb-4">
-      <div class="card product-card">
+    <div class="col-6 col-md-4 col-lg-3">
+      <div class="card h-100 shadow-sm rounded-4 overflow-hidden d-flex flex-column">
+        
+        <!-- Product Image -->
         {% if p.image %}
-        <img src="{{ p.image.url }}" class="card-img-top" alt="{{ p.name }}">
+        <img src="{{ p.image.url }}" class="card-img-top" style="height:200px; object-fit:cover;" alt="{{ p.name }}">
         {% else %}
-        <img src="{% static 'noimage.png' %}" class="card-img-top" alt="{{ p.name }}">
+        <img src="{% static 'noimage.png' %}" class="card-img-top" style="height:200px; object-fit:cover;" alt="{{ p.name }}">
         {% endif %}
-        <div class="card-body">
-          <h5 class="card-title">{{ p.name }}</h5>
-          <p class="card-text">₹{{ p.price }}</p>
-          <button class="btn btn-yellow btn-sm">Add to Cart</button>
+
+        <!-- Card Body -->
+        <div class="card-body d-flex flex-column">
+          <h6 class="card-title text-truncate">{{ p.name }}</h6>
+          <p class="card-text fw-bold text-success mb-3">₹{{ p.price }}</p>
+          
+          <!-- Rating Stars -->
+        <div class="mb-2">
+          {% for i in "12345" %}
+            {% if forloop.counter <= p.avg_rating|default:0 %}
+              <i class="bi bi-star-fill text-warning"></i>
+            {% else %}
+              <i class="bi bi-star text-warning"></i>
+            {% endif %}
+          {% endfor %}
+          <small>{{ p.avg_rating|default:0|floatformat:1 }}/5.0</small>
+        </div>
+
+          <!-- Action Buttons -->
+          <div class="d-grid gap-2 mt-auto">
+            <a href="{% url 'product_detail' p.id %}" class="btn btn-sm btn-outline-dark w-100">
+              <i class="bi bi-eye"></i> View
+            </a>
+            <a href="{% url 'add_to_cart' p.id %}" class="btn btn-sm btn-primary w-100">
+              <i class="bi bi-cart-plus"></i> Add to Cart
+            </a>
+            <a href="{% url 'add_to_favourite' p.id %}" class="btn btn-sm btn-outline-danger w-100">
+              <i class="bi bi-heart"></i> Favourite
+            </a>
+          </div>
         </div>
       </div>
     </div>
@@ -127,17 +169,44 @@
   </div>
 </div>
 
-<!-- SECTION 4: Reviews Auto-scrolling -->
+
+<!-- SECTION 4: Reviews Carousel -->
 <div class="container py-5 scroll-animate scroll-left">
-  <h2 class="mb-4">Customer Reviews</h2>
-  <div class="reviews-scroll">
-    {% for r in reviews %}
-    <div class="card p-3" style="min-width:250px;">
-      <strong>{{ r.user.username }}</strong>
-      <p>{{ r.comment|truncatewords:20 }}</p>
+  <h2 class="mb-4 text-center">Customer Reviews</h2>
+  {% if reviews %}
+  <div id="reviewsCarousel" class="carousel slide" data-bs-ride="carousel">
+    <div class="carousel-inner">
+      {% for r in reviews %}
+      <div class="carousel-item {% if forloop.first %}active{% endif %}">
+        <div class="card p-3 shadow-sm mx-auto" style="max-width:400px;">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <strong>{{ r.user.username }}</strong>
+            <div>
+              {% for i in "12345" %}
+                {% if forloop.counter <= r.rating %}
+                  <i class="bi bi-star-fill text-warning"></i>
+                {% else %}
+                  <i class="bi bi-star text-warning"></i>
+                {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+          <p class="text-muted">{{ r.comment|truncatewords:20 }}</p>
+          <small class="text-muted">{{ r.created_at|date:"d M Y H:i" }}</small>
+        </div>
+      </div>
+      {% endfor %}
     </div>
-    {% endfor %}
+    <button class="carousel-control-prev" type="button" data-bs-target="#reviewsCarousel" data-bs-slide="prev">
+      <span class="carousel-control-prev-icon"></span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#reviewsCarousel" data-bs-slide="next">
+      <span class="carousel-control-next-icon"></span>
+    </button>
   </div>
+  {% else %}
+    <p class="text-muted">No reviews yet.</p>
+  {% endif %}
 </div>
 
-{% endblock content%}
+{% endblock %}
