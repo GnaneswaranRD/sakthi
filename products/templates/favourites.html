@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Favourites{% endblock %}
+{% block content %}
+<h2>Your Favourites</h2>
+<ul class="list-group">
+  {% for f in favs %}
+  <li class="list-group-item d-flex justify-content-between">
+    {{ f.product.name }}
+  </li>
+  {% empty %}
+  <li class="list-group-item">No favourites yet</li>
+  {% endfor %}
+</ul>
+{% endblock %}

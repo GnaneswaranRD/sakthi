@@ -1,0 +1,143 @@
+{% extends "home.html" %}
+{% block title %}Dashboard{% endblock %}
+{% load static %}
+{% block content %}
+
+<!-- CATEGORY SECTION -->
+<section class="category-section py-5 scroll-animate scroll-left">
+  <div class="container">
+
+    <!-- Title -->
+    <div class="row">
+      <div class="col-12 text-center mb-4">
+        <h2 class="fw-bold">Our Products</h2>
+        <p class="text-muted">Explore our product categories below</p> <!-- optional subtitle -->
+      </div>
+    </div>
+
+    <!-- Category Grid -->
+    <div class="row justify-content-center g-4">
+
+      {% for menu in menus %}
+      <div class="col-4 col-md-2 text-center">
+        <!-- Round image -->
+        {% if menu.image %}
+          <img src="{{ menu.image.url }}" alt="{{ menu.name }}" class="category-img mb-2">
+        {% else %}
+          <img src="{% static 'noimage.png' %}" alt="{{ menu.name }}" class="category-img mb-2">
+        {% endif %}
+
+        <!-- Title -->
+        <h6 class="fw-bold">{{ menu.name }}</h6>
+
+        <!-- Dropdown if needed -->
+        {% if menu.children.all %}
+          <div class="dropdown mt-2">
+            <button class="btn btn-outline-dark btn-sm dropdown-toggle" type="button" id="menu{{ menu.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+              View More
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="menu{{ menu.id }}">
+              {% for child in menu.children.all %}
+                <li><a class="dropdown-item" href="#">{{ child.name }}</a></li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+
+    </div>
+  </div>
+</section>
+
+
+
+<!-- SECTION 1: Recently Added Products -->
+<div class="container py-5 scroll-animate scroll-right">
+  <h2 class="mb-4">Recently Added</h2>
+  <div class="row">
+    {% for p in recently_added %}
+    <div class="col-6 col-md-3 mb-4">
+      <div class="card product-card">
+        {% if p.image %}
+        <img src="{{ p.image.url }}" class="card-img-top" alt="{{ p.name }}">
+        {% else %}
+        <img src="{% static 'noimage.png' %}" class="card-img-top" alt="{{ p.name }}">
+        {% endif %}
+        <div class="card-body">
+          <h5 class="card-title">{{ p.name }}</h5>
+          <p class="card-text">₹{{ p.price }}</p>
+          <form method="post" action="{% url 'cart' %}">
+            {% csrf_token %}
+            <input type="hidden" name="product_id" value="{{ p.id }}">
+            <button type="submit" class="btn btn-yellow btn-sm">Add to Cart</button>
+          </form>
+          <form method="post" action="{% url 'favourites' %}" class="mt-1">
+            {% csrf_token %}
+            <input type="hidden" name="product_id" value="{{ p.id }}">
+            <button type="submit" class="btn btn-outline-dark btn-sm">♥ Add</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+
+<!-- HERO SECTION -->
+<div id="carouselHero" class="carousel slide scroll-animate scroll-left">
+  <div class="carousel-inner text-center bg-light">
+    <div class="carousel-item active">
+      <img src="{% static 'hero1.jpg' %}" class="d-block mx-auto img-fluid hero-img" alt="Hero 1">
+    </div>
+    <div class="carousel-item">
+      <img src="{% static 'hero2.jpg' %}" class="d-block mx-auto img-fluid hero-img" alt="Hero 2">
+    </div>
+  </div>
+  <button class="carousel-control-prev" type="button" data-bs-target="#carouselHero" data-bs-slide="prev">
+    <span class="carousel-control-prev-icon"></span>
+  </button>
+  <button class="carousel-control-next" type="button" data-bs-target="#carouselHero" data-bs-slide="next">
+    <span class="carousel-control-next-icon"></span>
+  </button>
+</div>
+
+
+<!-- SECTION 3: Best Sellers -->
+<div class="container py-5 scroll-animate scroll-right">
+  <h2 class="mb-4">Best Sellers</h2>
+  <div class="row">
+    {% for p in best_sellers %}
+    <div class="col-6 col-md-3 mb-4">
+      <div class="card product-card">
+        {% if p.image %}
+        <img src="{{ p.image.url }}" class="card-img-top" alt="{{ p.name }}">
+        {% else %}
+        <img src="{% static 'noimage.png' %}" class="card-img-top" alt="{{ p.name }}">
+        {% endif %}
+        <div class="card-body">
+          <h5 class="card-title">{{ p.name }}</h5>
+          <p class="card-text">₹{{ p.price }}</p>
+          <button class="btn btn-yellow btn-sm">Add to Cart</button>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- SECTION 4: Reviews Auto-scrolling -->
+<div class="container py-5 scroll-animate scroll-left">
+  <h2 class="mb-4">Customer Reviews</h2>
+  <div class="reviews-scroll">
+    {% for r in reviews %}
+    <div class="card p-3" style="min-width:250px;">
+      <strong>{{ r.user.username }}</strong>
+      <p>{{ r.comment|truncatewords:20 }}</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% endblock content%}

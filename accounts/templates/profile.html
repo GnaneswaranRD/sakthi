@@ -1,0 +1,68 @@
+
+{% extends "home.html" %}
+{% block title %}Dashboard{% endblock %}
+{% load static %}
+{% block style %}
+  <style>
+    .profile-card {
+      max-width: 600px;
+      margin: auto;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      padding: 2rem;
+      background: #fff;
+      position: relative;
+      z-index: 2;
+    }
+    .profile-pic {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #ffeb3b;
+    }
+    
+  </style>
+{% endblock style %}
+{% block content %}
+<div class="container py-5">
+  <div class="profile-card">
+    <h3 class="text-center mb-4">Edit Profile</h3>
+
+    <div class="text-center mb-3">
+      {% if request.user.profile.profile_pic %}
+        <img src="{{ request.user.profile.profile_pic.url }}" class="profile-pic" alt="Profile Picture">
+      {% else %}
+        <img src="{% static 'noimage.png' %}" class="profile-pic" alt="Profile Picture">
+      {% endif %}
+    </div>
+
+    <form method="post" enctype="multipart/form-data" id="profileForm">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input type="email" name="email" value="{{ request.user.email }}" class="form-control">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Full Name</label>
+        <input type="text" name="full_name" value="{{ request.user.profile.full_name }}" class="form-control">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Phone</label>
+        <input type="text" name="phone" value="{{ request.user.profile.phone }}" class="form-control">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Address</label>
+        <textarea name="address" class="form-control">{{ request.user.profile.address }}</textarea>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Profile Picture</label>
+        <input type="file" name="profile_pic" class="form-control">
+      </div>
+      <button type="submit" class="btn btn-yellow w-100">Save Changes</button>
+    </form>
+  </div>
+</div>
+
+
+{% endblock content %}
